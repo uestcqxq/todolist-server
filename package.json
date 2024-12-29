@@ -4,8 +4,8 @@
   "description": "TodoList Mini Program Backend",
   "main": "app.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=production node app.js",
-    "dev": "cross-env NODE_ENV=development nodemon app.js",
+    "start": "NODE_ENV=production node app.js",
+    "dev": "NODE_ENV=development nodemon app.js",
     "migrate": "node db/migrate.js",
     "test": "node test-db.js"
   },
@@ -23,7 +23,6 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3",
     "nodemon": "^2.0.7"
   }
 }
