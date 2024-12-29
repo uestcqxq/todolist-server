@@ -2,6 +2,10 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { workPlanValidators } = require('../middleware/validator');
+const { authMiddleware } = require('./auth');
+
+// 添加认证中间件
+router.use(authMiddleware);
 
 // 获取工作计划列表
 router.get('/', async (req, res) => {
@@ -13,11 +17,12 @@ router.get('/', async (req, res) => {
 
     // 检查数据库中的用户
     const user = await db.get('SELECT * FROM users WHERE id = ?', [userId]);
-    console.log('查询到的用户:', user);
-
-    // 检查数据库中的计划
-    const allPlans = await db.all('SELECT * FROM work_plans WHERE user_id = ?', [userId]);
-    console.log('该用户的所有计划:', allPlans);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: '用户不存在'
+      });
+    }
 
     // 查询特定期间的计划
     const plans = await db.all(`
@@ -33,7 +38,6 @@ router.get('/', async (req, res) => {
     console.log('查询到的计划:', plans);
 
     if (plans.length === 0) {
-      console.log('未找到计划数据');
       return res.json({
         success: true,
         data: []
@@ -58,8 +62,7 @@ router.get('/', async (req, res) => {
 
     console.log('查询到的工作项:', items);
 
-    // 返回计划数据
-    const responseData = {
+    res.json({
       success: true,
       data: [{
         id: plans[0].id,
@@ -69,10 +72,7 @@ router.get('/', async (req, res) => {
         item_count: plans[0].item_count || 0,
         completed_count: plans[0].completed_count || 0
       }]
-    };
-
-    console.log('返回数据:', responseData);
-    res.json(responseData);
+    });
 
   } catch (err) {
     console.error('获取工作计划失败:', err);
@@ -298,7 +298,7 @@ router.get('/:id', async (req, res, next) => {
     const { id } = req.params;
     const userId = req.user.id;
 
-    // 获取计划基���信息
+    // 获取计划基本信息
     const plan = await db.all(`
       SELECT * FROM work_plans 
       WHERE id = ? AND user_id = ?

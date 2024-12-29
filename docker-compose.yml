@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+  todolist-api:
+    build: .
+    container_name: todolist-api
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - BASE_URL=https://minpro.mrseven.site
+      - DB_HOST=1Panel-mysql-RJ9m
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=qxqlm110400
+      - DB_NAME=todolist
+      - JWT_SECRET=your-secure-jwt-secret
+      - JWT_EXPIRES_IN=7d
+      - LOG_LEVEL=info
+      - LOG_PATH=/app/logs
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - todolist-network
+
+networks:
+  todolist-network:
+    external: true 

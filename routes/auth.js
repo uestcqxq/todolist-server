@@ -13,14 +13,6 @@ router.post('/login', async (req, res) => {
     const { code, userInfo } = req.body;
     console.log('微信登录请求:', { code, userInfo });
 
-    // 使用环境变量中的小程序配置
-    const wxConfig = {
-      appid: process.env.WX_APPID,
-      secret: process.env.WX_APP_SECRET,
-      js_code: code,
-      grant_type: 'authorization_code'
-    };
-    
     // 查找或创建用户
     let user = await db.get(
       'SELECT * FROM users WHERE openid = ?',
@@ -36,19 +28,11 @@ router.post('/login', async (req, res) => {
         [code, userInfo?.nickName || '微信用户']
       );
       
-      if (!result || !result.lastID) {
-        throw new Error('创建用户失败');
-      }
-
       // 查询新创建的用户
       user = await db.get(
         'SELECT * FROM users WHERE id = ?',
         [result.lastID]
       );
-
-      if (!user) {
-        throw new Error('用户创建后查询失败');
-      }
 
       console.log('创建新用户:', user);
     }
@@ -56,21 +40,11 @@ router.post('/login', async (req, res) => {
     // 生成 token
     const token = jwt.sign(
       { id: user.id, openid: user.openid },
-      JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
     );
 
     console.log('登录成功:', { userId: user.id, token });
-
-    // 为新用户生成初始数据
-    if (!user.has_initial_data) {
-      await generateInitialData(user.id);
-      // 标记用户已有初始数据
-      await db.run(
-        'UPDATE users SET has_initial_data = 1 WHERE id = ?',
-        [user.id]
-      );
-    }
 
     res.json({
       success: true,
@@ -86,7 +60,7 @@ router.post('/login', async (req, res) => {
     console.error('登录失败:', err);
     res.status(500).json({
       success: false,
-      message: process.env.NODE_ENV === 'production' ? '登录失败' : err.message
+      message: err.message || '登录失败'
     });
   }
 });
@@ -134,7 +108,7 @@ async function generateInitialData(userId) {
         {
           content: '编写技术文档',
           status: 'completed',
-          evaluation: '提前完��'
+          evaluation: '提前完成'
         },
         {
           content: '部署测试环境',

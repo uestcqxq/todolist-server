@@ -1,13 +1,13 @@
 {
-  "name": "work-plans-server",
+  "name": "todolist-server",
   "version": "1.0.0",
-  "description": "Work Plans API Server",
+  "description": "TodoList Mini Program Backend",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "nodemon app.js",
+    "start": "cross-env NODE_ENV=production node app.js",
+    "dev": "cross-env NODE_ENV=development nodemon app.js",
     "migrate": "node db/migrate.js",
-    "migrate:reset": "node db/reset.js"
+    "test": "node test-db.js"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -15,7 +15,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.17.1",
-    "express-rate-limit": "^7.5.0",
+    "express-rate-limit": "^7.1.5",
     "express-validator": "^6.15.0",
     "helmet": "^4.6.0",
     "jsonwebtoken": "^8.5.1",
@@ -23,6 +23,7 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "nodemon": "^2.0.7"
   }
 }
